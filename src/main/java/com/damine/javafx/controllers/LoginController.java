@@ -7,9 +7,16 @@ import com.damine.javafx.services.UserService;
 import com.damine.javafx.utils.BCryptManagerUtil;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +31,8 @@ import java.util.ResourceBundle;
 @FxmlView("../fxml/login.fxml")
 public class LoginController implements Initializable {
     @FXML
+    ComboBox<String> role;
+    @FXML
     private PasswordField password;
     @FXML
     private TextField username;
@@ -35,15 +44,21 @@ public class LoginController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        role.getItems().add(RoleEnum.USER.name());
+        role.getItems().add(RoleEnum.ADMINISTRATOR.name());
         if (userService.testUser()){
             // Ceci n'est pas à recopier en production
+            List<RoleEnum> userRole = Arrays.asList(RoleEnum.USER);
             List<RoleEnum> adminRole = Arrays.asList(RoleEnum.USER, RoleEnum.ADMINISTRATOR);
+            User user = new User("user", "user", "User", "USER", userRole);
             User adminUser = new User("admin", "admin", "Admin", "ADMIN", adminRole);
             userRepository.save(adminUser);
+            userRepository.save(user);
         }
     }
 
-    public void login(ActionEvent actionEvent) {
+    @FXML
+    public void login(ActionEvent event) throws Exception {
         if(username.getText()==null){
             return;
         }
@@ -54,7 +69,26 @@ public class LoginController implements Initializable {
             return;
         }
         if (BCryptManagerUtil.passwordencoder().matches(password.getText(), userService.loadUserByUsername(username.getText()).getPassword())) {
-            System.out.println("encoder: true");
+            if(role.getSelectionModel().getSelectedItem()=="USER"){
+                if(userService.loadUserByUsername(username.getText()).getAuthorities().contains(RoleEnum.USER)){
+                    Node node = (Node) event.getSource();
+                    Stage stage = (Stage) node.getScene().getWindow();
+                    Scene scene = stage.getScene();
+                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/user.fxml"));
+                    Parent root = (Parent) fxmlLoader.load();
+                    scene.setRoot(root);
+                }
+            }
+            if(role.getSelectionModel().getSelectedItem()=="ADMINISTRATOR"){
+                if(userService.loadUserByUsername(username.getText()).getAuthorities().contains(RoleEnum.ADMINISTRATOR)){
+                    Node node = (Node) event.getSource();
+                    Stage stage = (Stage) node.getScene().getWindow();
+                    Scene scene = stage.getScene();
+                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("../fxml/admin.fxml"));
+                    Parent root = (Parent) fxmlLoader.load();
+                    scene.setRoot(root);
+                }
+            }
         }else{
             System.out.println("encoder: false");
         }
