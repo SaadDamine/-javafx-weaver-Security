@@ -3,10 +3,13 @@ package com.damine.javafx.services;
 import com.damine.javafx.entities.User;
 import com.damine.javafx.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 @Service("userService")
 public class UserService implements UserDetailsService {
@@ -18,8 +21,8 @@ public class UserService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    public Boolean testUser(){
-        return (userRepository.findAll().size()==0);
+    public Boolean testUser() {
+        return (userRepository.findAll().size() == 0);
     }
 
     @Override
@@ -30,5 +33,15 @@ public class UserService implements UserDetailsService {
         } else {
             return user;
         }
+    }
+
+    public  boolean userHasAuthority(User user, String authority) {
+        Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+        for (GrantedAuthority grantedAuthority : authorities) {
+            if (authority.equals(grantedAuthority.getAuthority())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
