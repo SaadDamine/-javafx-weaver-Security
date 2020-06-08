@@ -1,3 +1,5 @@
+[![Demo CountPages alpha](https://www.ilantus.com/wp-content/uploads/2019/07/authentication-vs-authorization1-thegem-blog-default.png)](https://www.youtube.com/watch?v=rQcSYMdJ_us)
+
 # javafx-weaver-example
 Example repository Spring Boot and JavaFX integration
 # javafx-weaver-template
